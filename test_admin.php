@@ -23,22 +23,27 @@ echo "  - Interactions Table: '{$interactionsTable}'\n";
 echo "  - Users Table: '{$usersTable}'\n\n";
 
 // TEST 1: Database & admin_users Table Verification
+$adminUser = getenv('ADMIN_USERNAME') ?: 'Capital Grow';
+$adminPass = getenv('ADMIN_PASSWORD') ?: 'Capital@2026#Grow';
+
 echo "[TEST 1] Verifying {$usersTable} Table...\n";
-$stmt = $pdo->query("SELECT id, username, role, last_login FROM `{$usersTable}` WHERE username = 'admin'");
+$stmt = $pdo->prepare("SELECT id, username, role, last_login FROM `{$usersTable}` WHERE username = ?");
+$stmt->execute([$adminUser]);
 $admin = $stmt->fetch();
 if ($admin) {
     echo "  -> SUCCESS! Admin user '{$admin['username']}' found with role '{$admin['role']}' in '{$usersTable}'\n\n";
 } else {
-    echo "  -> FAILED: Admin user not found in '{$usersTable}'.\n";
+    echo "  -> FAILED: Admin user '{$adminUser}' not found in '{$usersTable}'.\n";
     exit(1);
 }
 
 // TEST 2: Password Verification
 echo "[TEST 2] Verifying Admin Password Hash...\n";
-$stmtPass = $pdo->query("SELECT password_hash FROM `{$usersTable}` WHERE username = 'admin'");
+$stmtPass = $pdo->prepare("SELECT password_hash FROM `{$usersTable}` WHERE username = ?");
+$stmtPass->execute([$adminUser]);
 $hash = $stmtPass->fetchColumn();
-if (password_verify('Option@2026#Trading', $hash)) {
-    echo "  -> SUCCESS! Password 'Option@2026#Trading' verified against bcrypt hash.\n\n";
+if (password_verify($adminPass, $hash)) {
+    echo "  -> SUCCESS! Password verified against bcrypt hash for '{$adminUser}'.\n\n";
 } else {
     echo "  -> FAILED: Password verification mismatch.\n";
     exit(1);

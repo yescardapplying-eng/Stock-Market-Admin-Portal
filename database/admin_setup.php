@@ -31,8 +31,17 @@ try {
     echo "Table '{$usersTable}' created or verified.\n";
 
     // Check if default admin exists
-    $defaultUser = getenv('ADMIN_USERNAME') ?: 'admin';
-    $defaultPass = getenv('ADMIN_PASSWORD') ?: 'Option@2026#Trading';
+    $defaultUser = getenv('ADMIN_USERNAME') ?: 'Capital Grow';
+    $defaultPass = getenv('ADMIN_PASSWORD') ?: 'Capital@2026#Grow';
+
+    // Remove legacy 'admin' user if switching to Capital Grow
+    if ($defaultUser !== 'admin') {
+        $delOld = $pdo->prepare("DELETE FROM `{$usersTable}` WHERE username = 'admin'");
+        $delOld->execute();
+        if ($delOld->rowCount() > 0) {
+            echo "Legacy 'admin' user removed.\n";
+        }
+    }
 
     $stmt = $pdo->prepare("SELECT id FROM `{$usersTable}` WHERE username = ?");
     $stmt->execute([$defaultUser]);
